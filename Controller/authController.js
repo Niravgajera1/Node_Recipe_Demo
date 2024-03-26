@@ -4,13 +4,13 @@ const jwt = require("jsonwebtoken");
 const User = require("./../models/userModel");
 const sendEmail = require("./../utils/email");
 
-const signToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, {
+const signToken = (id, role) =>
+  jwt.sign({ id, role }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
 const createSendToken = (user, statuscode, res) => {
-  const token = signToken(user._id);
+  const token = signToken(user._id, user.role);
   const cookieOptions = {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
@@ -255,5 +255,27 @@ exports.makeAdmin = async (req, res) => {
       message: "Failed to promote user to admin",
       error: error.message,
     });
+  }
+};
+
+exports.validateUser = async (req, res, next) => {
+  try {
+    let token;
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
+    }
+
+    if (!token) {
+      throw new Error("You are not logged in,Please login", 401);
+    }
+    const decode = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decode;
+
+    next();
+  } catch (error) {
+    res.send(error.message);
   }
 };
