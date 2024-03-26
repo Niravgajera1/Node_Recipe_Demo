@@ -4,7 +4,7 @@ exports.getAllReview = async (req, res) => {
   try {
     let filter = {};
     if (req.params.recipeId) filter = { recipe: req.params.recipeId };
-    const review = await Review.find(filter);
+    const review = await Review.find(filter).populate("user");
     res.status(200).json({
       status: "success",
       results: review.length,

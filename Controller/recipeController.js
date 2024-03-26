@@ -53,7 +53,7 @@ exports.createRecipe = async (req, res) => {
 
 exports.getAllRecipe = async (req, res) => {
   try {
-    const recipe = await Recipe.find();
+    const recipe = await Recipe.find().populate("reviews");
     res.status(200).json({
       satus: "success",
       results: recipe.length,
@@ -72,7 +72,7 @@ exports.getAllRecipe = async (req, res) => {
 exports.getrecipe = async (req, res) => {
   try {
     const recipe = await Recipe.findById(req.params.id).populate("reviews");
-    console.log(recipe);
+
     if (!recipe) {
       throw new Error("recipe with this id is not found");
     }
